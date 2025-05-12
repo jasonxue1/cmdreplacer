@@ -3,8 +3,7 @@ name: Build & Release CommandReplacer
 on:
   push:
     branches: [ main, master ]
-    tags:
-      - '*'  # 例如 1.0.0
+    tags:     [ '*' ]      # 打任何 tag（如 1.0.0）都会触发 Release
 
 jobs:
   build:
@@ -12,22 +11,30 @@ jobs:
     outputs:
       jar-name: ${{ steps.rename.outputs.jar }}
     steps:
-      - name: Checkout repo
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Java 11
+      # Java 8 带 Pack200，ForgeGradle 2.1 必需
+      - name: Set up Java 8
         uses: actions/setup-java@v3
         with:
           distribution: temurin
-          java-version: '11'
+          java-version: '8'
 
-      - name: Install system Gradle
+      # 安装系统 Gradle
+      - name: Install Gradle
         run: sudo apt-get update && sudo apt-get install -y gradle
 
-      - name: Build mod with system Gradle
-        run: gradle --refresh-dependencies build --quiet --no-daemon
+      # ★ 一次性解压 MCP & 拉 Forge 依赖（关键步骤）
+      - name: Prepare Forge workspace
+        run: gradle setupCIWorkspace --no-daemon
 
-      - name: Rename JAR to include MC & mod version
+      # 真正编译
+      - name: Build mod
+        run: gradle build --no-daemon --quiet
+
+      # 重命名 JAR
+      - name: Rename JAR
         id: rename
         run: |
           TAG=${GITHUB_REF#refs/tags/}
@@ -37,23 +44,23 @@ jobs:
 
   release:
     needs: build
-    if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref,'refs/tags/')
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
+      - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
         with:
-          tag_name: ${{ github.ref_name }}
-          release_name: "CommandReplacer ${{ github.ref_name }}"
+          tag_name:      ${{ github.ref_name }}
+          release_name:  "CommandReplacer ${{ github.ref_name }}"
 
-      - name: Upload mod JAR to Release
+      - name: Upload mod JAR
         uses: actions/upload-release-asset@v1
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: build/libs/${{ needs.build.outputs.jar-name }}
-          asset_name: ${{ needs.build.outputs.jar-name }}
+          upload_url:    ${{ steps.create_release.outputs.upload_url }}
+          asset_path:    build/libs/${{ needs.build.outputs.jar-name }}
+          asset_name:    ${{ needs.build.outputs.jar-name }}
           asset_content_type: application/java-archive
