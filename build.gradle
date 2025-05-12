@@ -1,10 +1,14 @@
 buildscript {
     repositories {
-        maven { url "http://files.minecraftforge.net/maven" }
+        // ForgeGradle 插件仓库
+        maven { url "https://files.minecraftforge.net/maven" }
+        // 兼容老版本 MDK 推荐使用 jcenter
+        jcenter()
         mavenCentral()
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
+        // 对应 MC 1.8.9 的 ForgeGradle 版本
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT'
     }
 }
 
@@ -15,13 +19,25 @@ group = "com.jasonxue"
 archivesBaseName = "cmdreplacer"
 
 minecraft {
-    version = "1.8.9-11.15.1.2318"
+    // 注意：这里是 1.8.9-11.15.1.2318-1.8.9，后缀重复 MC 版本用于兼容旧 MDK
+    version = "1.8.9-11.15.1.2318-1.8.9"
+    // 1.8.9 推荐使用 stable_22 映射
+    mappings = "stable_22"
     runDir = "run"
+    // 如果你不需要生成源代码 Jar，可以关闭：
+    makeObfSourceJar = false
 }
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
 
 repositories {
     mavenCentral()
+}
+
+dependencies {
+    // 你的 mod 运行时依赖写在这里
+}
+
+tasks.withType(JavaCompile) {
+    // Java 8 编译目标
+    sourceCompatibility = "1.8"
+    targetCompatibility = "1.8"
 }
