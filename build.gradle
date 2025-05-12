@@ -1,12 +1,12 @@
 buildscript {
     repositories {
-        // 用于下载 ForgeGradle 插件
-        maven { url "https://files.minecraftforge.net/maven" }
         jcenter()
+        // ★ 正确的 Forge 仓库地址
+        maven { url "https://maven.minecraftforge.net" }
         mavenCentral()
     }
     dependencies {
-        // 对应 Minecraft 1.8.9 的 ForgeGradle
+        // 对应 Minecraft 1.8.9 的 ForgeGradle
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT'
     }
 }
@@ -14,14 +14,15 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle.forge'
 
 version = "1.0"
-group = "com.jasonxue"
+group   = "com.jasonxue"
 archivesBaseName = "cmdreplacer"
 
 minecraft {
-    // 指定 1.8.9 的 Forge 版本
-    version = "1.8.9-11.15.1.2318-1.8.9"
-    mappings = "stable_22"
-    runDir = "run"
+    // Forge 1.8.9 正确写法，后缀重复 MC 版本是 FG2.1 习惯
+    version   = "1.8.9-11.15.1.2318-1.8.9"
+    mappings  = "stable_22"
+    runDir    = "run"
+    // 不打源码包可关掉
     makeObfSourceJar = false
 }
 
@@ -30,11 +31,8 @@ repositories {
 }
 
 dependencies {
-    // 在这里添加你自己的第三方库依赖，例如：
-    // deobfCompile "com.google.code.gson:gson:2.8.0"
-    //
-    // **切记不要再写**
-    // deobfCompile "net.minecraftforge:forge:1.8.9-11.15.1.2318"
+    // 此处 **不要** 再写 net.minecraftforge:forge 依赖
+    // ForgeGradle 会自动注入
 }
 
 tasks.withType(JavaCompile) {

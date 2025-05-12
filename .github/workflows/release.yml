@@ -25,7 +25,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y gradle
 
       - name: Build mod with system Gradle
-        run: gradle build --quiet --no-daemon
+        run: gradle --refresh-dependencies build --quiet --no-daemon
 
       - name: Rename JAR to include MC & mod version
         id: rename
