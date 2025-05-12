@@ -21,6 +21,15 @@ jobs:
           distribution: temurin
           java-version: '8'
 
+      - name: Ensure Gradle wrapper exists
+        run: |
+          if [ ! -f gradlew ]; then
+            echo ">> no gradlew found, installing system gradle to generate wrapper"
+            sudo apt-get update && sudo apt-get install -y gradle
+            # 4.4.1 对应 ForgeGradle 2.2 要求，且不含 --add-opens 参数
+            gradle wrapper --gradle-version 4.4.1
+          fi
+
       - name: Grant execute permission to Gradle wrapper
         run: chmod +x ./gradlew
 
