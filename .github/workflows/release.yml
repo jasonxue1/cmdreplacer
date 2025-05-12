@@ -1,11 +1,10 @@
 name: Build & Release CommandReplacer
 
-# 同时响应分支与 Tag 推送；只有 Tag 时才触发 Release 部分
 on:
   push:
     branches: [ main, master ]
     tags:
-      - '*'      # 任何 tag，比如 1.0.0
+      - '*'      # 任意 tag，比如 1.0.0
 
 jobs:
   build:
@@ -13,7 +12,7 @@ jobs:
     outputs:
       jar-name: ${{ steps.rename.outputs.jar }}
     steps:
-      - name: Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v3
 
       - name: Set up Java 8
@@ -22,28 +21,26 @@ jobs:
           distribution: temurin
           java-version: '8'
 
-      - name: Install Gradle
-        run: sudo apt-get update && sudo apt-get install -y gradle
+      - name: Grant execute permission to Gradle wrapper
+        run: chmod +x ./gradlew
 
-      - name: Build mod
-        run: gradle build --quiet
+      - name: Build mod with Gradle wrapper
+        run: ./gradlew build --quiet --no-daemon
 
       - name: Rename JAR to include MC & mod version
         id: rename
         run: |
-          TAG=${GITHUB_REF#refs/tags/} 
+          TAG=${GITHUB_REF#refs/tags/}
           TARGET="cmdreplacer_1.8.9_${TAG}.jar"
-          # 默认输出 JAR 名称可能是 cmdreplacer-1.0.jar，替换为我们想要的格式
           mv build/libs/cmdreplacer-*.jar build/libs/${TARGET}
           echo "jar=${TARGET}" >> $GITHUB_OUTPUT
 
   release:
     needs: build
-    # 只有在推送 Tag（refs/tags/…）时才执行
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v3
 
       - name: Create GitHub Release
