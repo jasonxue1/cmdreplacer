@@ -21,17 +21,11 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Grant execute permission to Gradle wrapper
-        run: chmod +x ./gradlew
+      - name: Install system Gradle
+        run: sudo apt-get update && sudo apt-get install -y gradle
 
-      - name: Build mod with Gradle wrapper
-        run: |
-          # 清空任何外部 JVM 参数
-          export GRADLE_OPTS=''
-          ./gradlew build --quiet
-        # 确保子进程也不会继承旧的 GRADLE_OPTS
-        env:
-          GRADLE_OPTS: ''
+      - name: Build mod with system Gradle
+        run: gradle build --quiet --no-daemon
 
       - name: Rename JAR to include MC & mod version
         id: rename
